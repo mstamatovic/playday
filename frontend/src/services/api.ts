@@ -36,7 +36,12 @@ export const getGames = async () => {
 };
 
 export const createGame = async (gameData: any) => {
-    const response = await api.post('/games/', gameData);
+    const response = await api.post('/games/', gameData, {
+        headers: {
+            // ✅ Šaljemo Superadmin ključ koji čitamo iz Vercel environment varijabli
+            'X-Superadmin-Key': import.meta.env.VITE_SUPERADMIN_KEY
+        }
+    });
     return response.data;
 };
 
