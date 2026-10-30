@@ -8,7 +8,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'add_draft_enum'  # Možeš ostaviti i automatski generisani ID
-down_revision = None # Alembic će ovo sam popraviti, samo zameni sadržaj funkcija ispod
+down_revision = 'ba5c9d43dd26'
 branch_labels = None
 depends_on = None
 
