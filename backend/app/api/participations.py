@@ -21,11 +21,20 @@ def create_participation(participation: ParticipationCreate, db: Session = Depen
     # Proveri da li je termin zaključan
     if game.status.value == 'locked':
         raise HTTPException(status_code=400, detail="Termin je zaključan - nije moguće prijaviti se")
-    
-    if participation.user_id:
-        user = db.query(User).filter(User.id == participation.user_id).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="Korisnik nije pronađen")
+
+     # ✅ NOVO: Proveri da li je termin već popunjen
+    active_players_count = db.query(Participation).filter(
+        Participation.game_id == participation.game_id,
+        Participation.status != ParticipationStatus.DECLINED
+    ).count()
+
+    if active_players_count >= game.max_players:
+        raise HTTPException(status_code=400, detail="Prijavljen je maksimalan broj igrača. Proverite kasnije da li je neko otkazao prijavu ili kontaktirajte organizatora.  Hvala na razumevanju.")
+   
+    # if participation.user_id:
+    #     user = db.query(User).filter(User.id == participation.user_id).first()
+    #     if not user:
+    #         raise HTTPException(status_code=404, detail="Korisnik nije pronađen")
     
     # ✅ NOVA PROVERA: Spreči dupliranje prijava (ista kombinacija imena i telefona)
     if participation.guest_name and participation.guest_phone:

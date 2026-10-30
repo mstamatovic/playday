@@ -12,16 +12,12 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'games':
-        return <GameList />;
+        // ✅ Prosleđujemo funkciju koja menja tab na 'create'
+        return <GameList onNavigateToCreate={() => setActiveTab('create')} />;
       case 'create':
-        return (
-          <CreateGameForm
-            onSuccess={() => setActiveTab('games')}
-            onCancel={() => setActiveTab('games')} // <-- NOVO: Vraćanje na listu
-          />
-        );
+        return <CreateGameForm onSuccess={() => setActiveTab('games')} onCancel={() => setActiveTab('games')} />;
       default:
-        return <GameList />;
+        return <GameList onNavigateToCreate={() => setActiveTab('create')} />;
     }
   };
 
@@ -30,14 +26,16 @@ function App() {
       <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100">
         <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center py-4 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 text-xl shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
-                  ⚽
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight text-white">Playday</h1>
-                  <p className="text-xs text-zinc-500 font-mono tracking-wide">ORGANIZACIJA TERMINA ZA SPORT I REKREACIJU</p>
+            <div className="flex flex-col sm:flex-row justify-between items-center py-3 sm:py-4 gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 text-lg sm:text-xl shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
+                    ⚽
+                  </div>
+                  <div>
+                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white">Playday</h1>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-mono tracking-wide hidden sm:block">ORGANIZACIJA TERMINA</p>
+                  </div>
                 </div>
               </div>
               <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -45,7 +43,7 @@ function App() {
           </div>
         </header>
 
-        <main className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <main className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
           {renderContent()}
         </main>
       </div>
