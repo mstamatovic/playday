@@ -1,10 +1,26 @@
 import axios from 'axios';
 
-// ✅ Dinamički API URL: koristi localhost za development, ali radi i sa mrežne IP
-const API_URL = import.meta.env.VITE_API_URL ||
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8000'
-        : `http://${window.location.hostname}:8000`);
+// ✅ APSOLUTNO SIGURNA LOGIKA ZA ODREĐIVANJE API URL-A
+const getApiUrl = () => {
+    // 1. Prvo proveri da li je postavljeno u Vercel Environment Variables
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+
+    // 2. Ako si na lokalnoj mašini (kompjuter ili telefon u lokalnoj mreži)
+    if (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '192.168.1.203'
+    ) {
+        return 'http://localhost:8000';
+    }
+
+    // 3. FALLBACK: Ako ništa drugo ne upali, koristi tvoj stvarni Render URL
+    return 'https://playday-lsv2.onrender.com';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
     baseURL: API_URL,
