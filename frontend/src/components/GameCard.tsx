@@ -89,7 +89,7 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
         if (game.status === 'confirmed') {
             return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-950/50 text-blue-400 text-[10px] sm:text-xs font-mono font-semibold border border-blue-800/50">✅ POTVRĐEN</span>;
         }
-        return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-950/50 text-amber-400 text-[10px] sm:text-xs font-mono font-semibold border border-amber-800/50">⏳ ORGANIZACIJA</span>;
+        return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-950/50 text-amber-400 text-[10px] sm:text-xs font-mono font-semibold border border-amber-800/50">⏳ ORGANIZACIJA U TOKU</span>;
     };
 
     const handleCancelClick = (participationId: number) => {
