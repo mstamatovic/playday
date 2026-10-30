@@ -27,6 +27,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
     const [selectedGame, setSelectedGame] = useState<Game | null>(null);
     const [showJoinForm, setShowJoinForm] = useState(false);
     const [showFullModal, setShowFullModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [formData, setFormData] = useState({
         guest_name: '',
         guest_phone: '',
@@ -44,7 +45,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
             setShowJoinForm(false);
             setSelectedGame(null);
             setFormData({ guest_name: '', guest_phone: '', position: '', team: 'A' });
-            alert('Uspešno ste se prijavili! 🎉');
+            setShowSuccessModal(true);
         },
         onError: (error: any) => {
             alert('Greška pri prijavi: ' + (error.response?.data?.detail || error.message));
@@ -82,12 +83,13 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
             if (event.key === 'Escape') {
                 setShowJoinForm(false);
                 setShowFullModal(false);
+                setShowSuccessModal(false);
                 setSelectedGame(null);
             }
         };
-        if (showJoinForm || showFullModal) window.addEventListener('keydown', handleEsc);
+        if (showJoinForm || showFullModal || showSuccessModal) window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
-    }, [showJoinForm, showFullModal]);
+    }, [showJoinForm, showFullModal, showSuccessModal]);
 
     if (isLoading) return <div className="text-center py-20 text-zinc-500 font-mono animate-pulse">Učitavanje termina...</div>;
 
@@ -229,6 +231,26 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                 className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-3 rounded-xl transition-colors text-sm border border-zinc-700"
                             >
                                 Zatvori
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showSuccessModal && (
+                <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div className="relative w-full max-w-md bg-zinc-900 border border-emerald-800/50 rounded-2xl shadow-2xl p-6 sm:p-8">
+                        <div className="text-center">
+                            <div className="text-5xl mb-4">✅</div>
+                            <h3 className="text-xl font-bold text-white mb-4">Uspešno ste se prijavili!</h3>
+                            <p className="text-zinc-300 text-sm leading-relaxed mb-6">
+                                Vaša prijava je uspešno registrovana. Vidimo se na terenu!
+                            </p>
+                            <button
+                                onClick={() => setShowSuccessModal(false)}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition-colors text-sm shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)]"
+                            >
+                                Odlično!
                             </button>
                         </div>
                     </div>
