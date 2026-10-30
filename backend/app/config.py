@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     secret_key: str
     debug: bool = False
     
+    # ✅ NOVO: Tajni ključ za Superadmin pristup (zaštita kritičnih ruta)
+    superadmin_secret_key: str = "change-me-in-production-please"
+    
     # Opciono: Ako Ollama nije prisutan u produkciji, ove vrednosti će biti None
     ollama_base_url: Optional[str] = None
     ollama_model: Optional[str] = None
