@@ -36,9 +36,13 @@ def create_game(
                 detail=f"Termin se preklapa sa '{existing.title}' na ovoj lokaciji!"
             )
 
-    # 4. Ako nema preklapanja, kreiramo termin
-    # Napomena: organizer_id je privremeno hardkodiran na 1 dok ne uvedemo pravi login
-    db_game = Game(**game.model_dump(), organizer_id=1)
+    # ✅ 4. KLJUČNA ISPRAVKA: Uzimamo podatke, ali uklanjamo organizer_id ako ga frontend slučajno šalje
+    game_data = game.model_dump()
+    game_data.pop("organizer_id", None) 
+
+    # 5. Kreiramo termin sa forsiranim organizer_id=1 (dok ne uvedemo pravi login)
+    db_game = Game(**game_data, organizer_id=1)
+    
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
