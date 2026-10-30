@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     secret_key: str
     debug: bool = False
     
-    # ✅ Opciono: Ako Ollama nije prisutan u produkciji, ove vrednosti će biti None
+    # Opciono: Ako Ollama nije prisutan u produkciji, ove vrednosti će biti None
     ollama_base_url: Optional[str] = None
     ollama_model: Optional[str] = None
 
