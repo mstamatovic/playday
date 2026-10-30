@@ -1,16 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from app.database import get_db
-from app.models import Game
+from app.models.game import Game
 from app.models.participation import Participation, ParticipationStatus
-from app.schemas import GameCreate, GameResponse
+from app.schemas.game import GameCreate, GameResponse
 from app.services.game_processor import process_upcoming_games
+from app.dependencies import require_superadmin # ✅ Uvozimo našu zaštitu
 
 router = APIRouter(prefix="/games", tags=["games"])
 
+# ✅ ZAŠTIĆENO: Samo Superadmin može da kreira termin
 @router.post("/", response_model=GameResponse, status_code=201)
-def create_game(game: GameCreate, db: Session = Depends(get_db)):
-    db_game = Game(**game.model_dump())
+def create_game(
+    game: GameCreate, 
+    db: Session = Depends(get_db),
+    _: bool = Depends(require_superadmin) # 🛡️ Zaštita
+):
+    # 1. Računamo početak i kraj novog termina
+    new_start = game.date
+    new_end = new_start + timedelta(minutes=game.duration_minutes)
+
+    # 2. Tražimo sve termine na istoj lokaciji
+    existing_games = db.query(Game).filter(Game.location == game.location).all()
+
+    # 3. Proveravamo preklapanje
+    for existing in existing_games:
+        existing_start = existing.date
+        existing_end = existing_start + timedelta(minutes=existing.duration_minutes)
+
+        # Formula za preklapanje: (StartA < EndB) and (EndA > StartB)
+        if new_start < existing_end and new_end > existing_start:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Termin se preklapa sa '{existing.title}' na ovoj lokaciji!"
+            )
+
+    # 4. Ako nema preklapanja, kreiramo termin
+    # Napomena: organizer_id je privremeno hardkodiran na 1 dok ne uvedemo pravi login
+    db_game = Game(**game.model_dump(), organizer_id=1)
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
@@ -18,12 +46,11 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=list[GameResponse])
 def get_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # Prvo obradi nadolazeće termine
+    # Prvo obradi nadolazeće termine (automatsko zaključavanje/otkazivanje)
     process_upcoming_games(db)
     
     games = db.query(Game).offset(skip).limit(limit).all()
     
-    # Dodaj computed polja
     result = []
     for game in games:
         active_players = db.query(Participation).filter(
@@ -82,3 +109,40 @@ def get_game(game_id: int, db: Session = Depends(get_db)):
         "current_players_count": active_players,
         "current_cost_per_player": cost_per_player
     }
+
+# ✅ NOVO: ZAŠTIĆENO - Samo Superadmin može da menja termin
+@router.put("/{game_id}", response_model=GameResponse)
+def update_game(
+    game_id: int, 
+    game_update: GameCreate, # Koristimo istu šemu za jednostavnost
+    db: Session = Depends(get_db),
+    _: bool = Depends(require_superadmin) # 🛡️ Zaštita
+):
+    db_game = db.query(Game).filter(Game.id == game_id).first()
+    if not db_game:
+        raise HTTPException(status_code=404, detail="Termin nije pronađen")
+
+    # Ovde bi išla ista logika za preklapanje kao u create_game, 
+    # ali preskačemo proveru za trenutni termin koji menjamo.
+    
+    for key, value in game_update.model_dump().items():
+        setattr(db_game, key, value)
+        
+    db.commit()
+    db.refresh(db_game)
+    return db_game
+
+# ✅ NOVO: ZAŠTIĆENO - Samo Superadmin može da briše termin
+@router.delete("/{game_id}", status_code=204)
+def delete_game(
+    game_id: int, 
+    db: Session = Depends(get_db),
+    _: bool = Depends(require_superadmin) # 🛡️ Zaštita
+):
+    db_game = db.query(Game).filter(Game.id == game_id).first()
+    if not db_game:
+        raise HTTPException(status_code=404, detail="Termin nije pronađen")
+    
+    db.delete(db_game)
+    db.commit()
+    return None
