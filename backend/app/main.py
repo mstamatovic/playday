@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,15 +16,13 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS middleware
+# ✅ Dinamički CORS: čita iz env varijable, ili koristi default (uključujući *.vercel.app za test)
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://192.168.1.203:5173,https://playday.rs,https://*.vercel.app")
+allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:3000",
-        "http://192.168.1.203:5173",  # Lokalna mreža
-        "https://playday.rs",     # Production
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
