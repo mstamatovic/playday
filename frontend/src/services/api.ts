@@ -29,17 +29,25 @@ const api = axios.create({
     },
 });
 
-// Games endpoints
-export const getGames = async () => {
-    const response = await api.get('/games/');
-    return response.data;
-};
-
 export const createGame = async (gameData: any) => {
-    console.log('🔑 Šaljem ključ:', 'playday-super-secret-2024-xyz-123');
-    console.log('📦 Podaci:', gameData);
+    // ✅ Konvertuj datum da uključi lokalnu vremensku zonu
+    // Ovo sprečava da server (UTC) pogrešno protumači vreme kao UTC
+    let dateToSend = gameData.date;
 
-    const response = await api.post('/games/', gameData, {
+    if (typeof dateToSend === 'string' && !dateToSend.includes('Z') && !dateToSend.includes('+')) {
+        const localDate = new Date(dateToSend);
+        const tzOffset = -localDate.getTimezoneOffset(); // Razlika u minutima
+        const diff = tzOffset >= 0 ? '+' : '-';
+        const pad = (num: number) => Math.abs(num).toString().padStart(2, '0');
+
+        // Formiraj ISO string sa eksplicitnim offset-om (npr. 2026-11-02T19:00:00+01:00)
+        dateToSend = `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())}T${pad(localDate.getHours())}:${pad(localDate.getMinutes())}:${pad(localDate.getSeconds())}${diff}${pad(tzOffset / 60)}:${pad(tzOffset % 60)}`;
+    }
+
+    const response = await api.post('/games/', {
+        ...gameData,
+        date: dateToSend // Šaljemo ispravno formatiran datum
+    }, {
         headers: {
             'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
         }
