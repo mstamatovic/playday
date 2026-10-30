@@ -30,27 +30,23 @@ const api = axios.create({
 });
 
 export const createGame = async (gameData: any) => {
-    // Kreiraj Date objekat iz stringa koji je poslao frontend
-    const dateObj = new Date(gameData.date);
+    let dateToSend = gameData.date;
 
-    // Dodaj lokalni timezone offset ručno
-    const offset = -dateObj.getTimezoneOffset();
-    const offsetHours = Math.floor(Math.abs(offset) / 60);
-    const offsetMinutes = Math.abs(offset) % 60;
-    const offsetSign = offset >= 0 ? '+' : '-';
+    // Ako je datum u formatu "YYYY-MM-DDTHH:mm" (tačno 16 karaktera, bez timezone-a)
+    if (typeof dateToSend === 'string' && dateToSend.length === 16) {
+        const d = new Date(dateToSend); // JS ovo automatski tretira kao LOKALNO vreme
+        const offset = -d.getTimezoneOffset(); // Razlika u minutama (za CET je 60)
+        const sign = offset >= 0 ? '+' : '-';
+        const h = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+        const m = String(Math.abs(offset) % 60).padStart(2, '0');
 
-    // Formatiraj datum sa timezone-om
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const hours = String(dateObj.getHours()).padStart(2, '0');
-    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-
-    const dateWithTimezone = `${year}-${month}-${day}T${hours}:${minutes}:00${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+        // Pretvaramo "2026-11-02T19:00" u "2026-11-02T19:00:00+01:00"
+        dateToSend = `${dateToSend}:00${sign}${h}:${m}`;
+    }
 
     const response = await api.post('/games/', {
         ...gameData,
-        date: dateWithTimezone
+        date: dateToSend
     }, {
         headers: {
             'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
