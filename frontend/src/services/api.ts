@@ -30,23 +30,27 @@ const api = axios.create({
 });
 
 export const createGame = async (gameData: any) => {
-    // ✅ Konvertuj datum da uključi lokalnu vremensku zonu
-    // Ovo sprečava da server (UTC) pogrešno protumači vreme kao UTC
-    let dateToSend = gameData.date;
+    // Kreiraj Date objekat iz stringa koji je poslao frontend
+    const dateObj = new Date(gameData.date);
 
-    if (typeof dateToSend === 'string' && !dateToSend.includes('Z') && !dateToSend.includes('+')) {
-        const localDate = new Date(dateToSend);
-        const tzOffset = -localDate.getTimezoneOffset(); // Razlika u minutima
-        const diff = tzOffset >= 0 ? '+' : '-';
-        const pad = (num: number) => Math.abs(num).toString().padStart(2, '0');
+    // Dodaj lokalni timezone offset ručno
+    const offset = -dateObj.getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(offset) / 60);
+    const offsetMinutes = Math.abs(offset) % 60;
+    const offsetSign = offset >= 0 ? '+' : '-';
 
-        // Formiraj ISO string sa eksplicitnim offset-om (npr. 2026-11-02T19:00:00+01:00)
-        dateToSend = `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())}T${pad(localDate.getHours())}:${pad(localDate.getMinutes())}:${pad(localDate.getSeconds())}${diff}${pad(tzOffset / 60)}:${pad(tzOffset % 60)}`;
-    }
+    // Formatiraj datum sa timezone-om
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+
+    const dateWithTimezone = `${year}-${month}-${day}T${hours}:${minutes}:00${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
 
     const response = await api.post('/games/', {
         ...gameData,
-        date: dateToSend // Šaljemo ispravno formatiran datum
+        date: dateWithTimezone
     }, {
         headers: {
             'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
