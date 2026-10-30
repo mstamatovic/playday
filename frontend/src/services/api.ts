@@ -33,17 +33,25 @@ export const getGames = async () => {
 export const createGame = async (gameData: any) => {
     let dateToSend = gameData.date;
 
-    // Ako je datum u formatu "YYYY-MM-DDTHH:mm" (16 karaktera)
-    if (typeof dateToSend === 'string' && dateToSend.length === 16) {
-        const d = new Date(dateToSend);
-        const offset = -d.getTimezoneOffset(); // Ovo uzima tvoju lokalnu zonu (npr. +60 minuta za nas)
-        const sign = offset >= 0 ? '+' : '-';
-        const h = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-        const m = String(Math.abs(offset) % 60).padStart(2, '0');
+    // Uvek kreiraj Date objekat i dodaj eksplicitan timezone offset
+    const dateObj = new Date(dateToSend);
 
-        // Ovo pretvara "15:00" u "15:00:00+01:00"
-        dateToSend = `${dateToSend}:00${sign}${h}:${m}`;
-    }
+    // Dobij komponente datuma
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+
+    // Dobij lokalni timezone offset
+    const offset = -dateObj.getTimezoneOffset(); // Za nas je ovo +60 ili +120 minuta
+    const offsetSign = offset >= 0 ? '+' : '-';
+    const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+    const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
+
+    // Napravi ISO string sa eksplicitnim offset-om
+    // Primer: "2026-11-02T15:00:00+01:00"
+    dateToSend = `${year}-${month}-${day}T${hours}:${minutes}:00${offsetSign}${offsetHours}:${offsetMinutes}`;
 
     const response = await api.post('/games/', {
         ...gameData,
