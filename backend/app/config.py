@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,10 +10,12 @@ class Settings(BaseSettings):
     Učitava vrednosti iz .env fajla automatski.
     """
     database_url: str
-    ollama_base_url: str
-    ollama_model: str
     secret_key: str
     debug: bool = False
+    
+    # Opciono: Ako Ollama nije prisutan u produkciji, ove vrednosti će biti None
+    ollama_base_url: Optional[str] = None
+    ollama_model: Optional[str] = None
 
     class Config:
         env_file = ".env"
