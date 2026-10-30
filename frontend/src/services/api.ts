@@ -30,19 +30,18 @@ export const getGames = async () => {
     return response.data;
 };
 
-// 3. CREATE Game (SA TIMEZONE FIX-OM I SUPERADMIN KLJUČEM)
 export const createGame = async (gameData: any) => {
     let dateToSend = gameData.date;
 
-    // Ako je datum u formatu "YYYY-MM-DDTHH:mm" (16 karaktera, bez timezone-a)
+    // Ako je datum u formatu "YYYY-MM-DDTHH:mm" (16 karaktera)
     if (typeof dateToSend === 'string' && dateToSend.length === 16) {
         const d = new Date(dateToSend);
-        const offset = -d.getTimezoneOffset(); // Razlika u minutama
+        const offset = -d.getTimezoneOffset(); // Ovo uzima tvoju lokalnu zonu (npr. +60 minuta za nas)
         const sign = offset >= 0 ? '+' : '-';
         const h = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
         const m = String(Math.abs(offset) % 60).padStart(2, '0');
 
-        // Pretvaramo u "2026-11-02T19:00:00+01:00"
+        // Ovo pretvara "15:00" u "15:00:00+01:00"
         dateToSend = `${dateToSend}:00${sign}${h}:${m}`;
     }
 
@@ -51,7 +50,7 @@ export const createGame = async (gameData: any) => {
         date: dateToSend
     }, {
         headers: {
-            'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123' // Tvoj ključ
+            'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
         }
     });
     return response.data;
