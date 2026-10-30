@@ -29,17 +29,29 @@ const api = axios.create({
     },
 });
 
-// Games endpoints
-export const getGames = async () => {
-    const response = await api.get('/games/');
-    return response.data;
-};
-
 export const createGame = async (gameData: any) => {
-    console.log('🔑 Šaljem ključ:', 'playday-super-secret-2024-xyz-123');
-    console.log('📦 Podaci:', gameData);
+    // Kreiraj Date objekat iz stringa koji je poslao frontend
+    const dateObj = new Date(gameData.date);
 
-    const response = await api.post('/games/', gameData, {
+    // Dodaj lokalni timezone offset ručno
+    const offset = -dateObj.getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(offset) / 60);
+    const offsetMinutes = Math.abs(offset) % 60;
+    const offsetSign = offset >= 0 ? '+' : '-';
+
+    // Formatiraj datum sa timezone-om
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+
+    const dateWithTimezone = `${year}-${month}-${day}T${hours}:${minutes}:00${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+
+    const response = await api.post('/games/', {
+        ...gameData,
+        date: dateWithTimezone
+    }, {
         headers: {
             'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
         }
