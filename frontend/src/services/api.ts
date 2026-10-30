@@ -36,9 +36,11 @@ export const getGames = async () => {
 };
 
 export const createGame = async (gameData: any) => {
+    console.log('🔑 Šaljem ključ:', 'playday-super-secret-2024-xyz-123');
+    console.log('📦 Podaci:', gameData);
+
     const response = await api.post('/games/', gameData, {
         headers: {
-            // ✅ Šaljemo Superadmin ključ koji čitamo iz Vercel environment varijabli
             'X-Superadmin-Key': 'playday-super-secret-2024-xyz-123'
         }
     });
