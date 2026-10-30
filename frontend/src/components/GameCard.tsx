@@ -143,14 +143,14 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                         className="flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 text-zinc-300 hover:text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm"
                         onClick={() => setShowDetails(true)}
                     >
-                        Detalji & Spisak
+                        Spisak prijavljenih i napomene
                     </button>
                     <button
                         className={`flex-1 font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 ${game.status === 'cancelled'
-                                ? 'bg-red-900/30 text-red-400 cursor-not-allowed border border-red-800/50'
-                                : !canCancel
-                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] border border-emerald-500'
+                            ? 'bg-red-900/30 text-red-400 cursor-not-allowed border border-red-800/50'
+                            : !canCancel
+                                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+                                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] border border-emerald-500'
                             }`}
                         onClick={() => game.status !== 'cancelled' && canCancel && onJoinClick(game)}
                         disabled={game.status === 'cancelled' || !canCancel}
