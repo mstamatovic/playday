@@ -10,37 +10,36 @@ from app.dependencies import require_superadmin # ✅ Uvozimo našu zaštitu
 
 router = APIRouter(prefix="/games", tags=["games"])
 
-# ✅ ZAŠTIĆENO: Samo Superadmin može da kreira termin
 @router.post("/", response_model=GameResponse, status_code=201)
 def create_game(
     game: GameCreate, 
     db: Session = Depends(get_db),
-    _: bool = Depends(require_superadmin) # 🛡️ Zaštita
+    _: bool = Depends(require_superadmin)
 ):
-    # 1. Računamo početak i kraj novog termina
-    new_start = game.date
+    # ✅ 1. KLJUČNA ISPRAVKA: Ukloni timezone info da bi bio kompatibilan sa bazom
+    # Ako je datum "aware" (ima +01:00), pretvaramo ga u "naive" (običan datetime)
+    new_start = game.date.replace(tzinfo=None) if game.date.tzinfo else game.date
     new_end = new_start + timedelta(minutes=game.duration_minutes)
 
     # 2. Tražimo sve termine na istoj lokaciji
     existing_games = db.query(Game).filter(Game.location == game.location).all()
 
-    # 3. Proveravamo preklapanje
+    # 3. Proveravamo preklapanje (sada su svi datumi "naive" i mogu bezbedno da se porede)
     for existing in existing_games:
         existing_start = existing.date
         existing_end = existing_start + timedelta(minutes=existing.duration_minutes)
 
-        # Formula za preklapanje: (StartA < EndB) and (EndA > StartB)
         if new_start < existing_end and new_end > existing_start:
             raise HTTPException(
                 status_code=400, 
                 detail=f"Termin se preklapa sa '{existing.title}' na ovoj lokaciji!"
             )
 
-    # ✅ 4. KLJUČNA ISPRAVKA: Uzimamo podatke, ali uklanjamo organizer_id ako ga frontend slučajno šalje
+    # 4. Priprema podataka za čuvanje
     game_data = game.model_dump()
     game_data.pop("organizer_id", None) 
-
-    # 5. Kreiramo termin sa forsiranim organizer_id=1 (dok ne uvedemo pravi login)
+    
+    # 5. Kreiramo termin
     db_game = Game(**game_data, organizer_id=1)
     
     db.add(db_game)
