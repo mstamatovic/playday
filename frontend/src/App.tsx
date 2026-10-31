@@ -34,7 +34,7 @@ function App() {
                   </div>
                   <div>
                     <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white">Playday</h1>
-                    <p className="text-[10px] sm:text-xs text-zinc-500 font-mono tracking-wide hidden sm:block">ORGANIZACIJA TERMINA</p>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-mono tracking-wide hidden sm:block">ISTINSKI MAJSTORI FUDBALA IGRAJU NA ZLATIBORU</p>
                   </div>
                 </div>
               </div>
