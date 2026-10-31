@@ -49,11 +49,12 @@ def create_game(
 
 @router.get("/", response_model=list[GameResponse])
 def get_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # Prvo obradi nadolazeće termine (automatsko zaključavanje/otkazivanje)
+    # Prvo obradi nadolazeće termine
     process_upcoming_games(db)
     
     games = db.query(Game).offset(skip).limit(limit).all()
     
+    # Dodaj computed polja
     result = []
     for game in games:
         active_players = db.query(Participation).filter(
@@ -77,7 +78,10 @@ def get_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
             "status": game.status.value,
             "created_at": game.created_at,
             "current_players_count": active_players,
-            "current_cost_per_player": cost_per_player
+            "current_cost_per_player": cost_per_player,
+            # ✅ ISPRAVKA: Eksplicitno vraćamo imena ekipa iz baze
+            "team_a_name": game.team_a_name,
+            "team_b_name": game.team_b_name
         }
         result.append(game_dict)
     
@@ -110,7 +114,9 @@ def get_game(game_id: int, db: Session = Depends(get_db)):
         "status": game.status.value,
         "created_at": game.created_at,
         "current_players_count": active_players,
-        "current_cost_per_player": cost_per_player
+        "current_cost_per_player": cost_per_player,
+        "team_a_name": game.team_a_name,
+        "team_b_name": game.team_b_name
     }
 
 # ✅ NOVO: ZAŠTIĆENO - Samo Superadmin može da menja termin
