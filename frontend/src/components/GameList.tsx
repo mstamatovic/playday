@@ -174,8 +174,8 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, team: 'A' })}
                                         className={`py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${formData.team === 'A'
-                                                ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30'
-                                                : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/30'
+                                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                                             }`}
                                     >
                                         Ekipa A
@@ -184,8 +184,8 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, team: 'B' })}
                                         className={`py-3 px-4 rounded-xl font-bold text-sm transition-all border-2 ${formData.team === 'B'
-                                                ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/30'
-                                                : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                                            ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/30'
+                                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                                             }`}
                                     >
                                         Ekipa B
@@ -244,7 +244,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                             <div className="text-5xl mb-4">✅</div>
                             <h3 className="text-xl font-bold text-white mb-4">Uspešno ste se prijavili!</h3>
                             <p className="text-zinc-300 text-sm leading-relaxed mb-6">
-                                Vaša prijava je uspešno registrovana. Vidimo se na terenu!
+                                Uspešno ste se prijavili za zakazani termin. Prijavu možete otkazati najkasnije dva sata pre početka termina. Vidimo se na terenu!
                             </p>
                             <button
                                 onClick={() => setShowSuccessModal(false)}
