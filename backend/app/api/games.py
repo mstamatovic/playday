@@ -16,35 +16,35 @@ def create_game(
     db: Session = Depends(get_db),
     _: bool = Depends(require_superadmin)
 ):
-    # ✅ 1. KLJUČNA ISPRAVKA: Ukloni timezone info da bi bio kompatibilan sa bazom
-    # Ako je datum "aware" (ima +01:00), pretvaramo ga u "naive" (običan datetime)
+    # 1. Računamo početak i kraj novog termina
     new_start = game.date.replace(tzinfo=None) if game.date.tzinfo else game.date
     new_end = new_start + timedelta(minutes=game.duration_minutes)
 
     # 2. Tražimo sve termine na istoj lokaciji
     existing_games = db.query(Game).filter(Game.location == game.location).all()
 
-    # 3. Proveravamo preklapanje (sada su svi datumi "naive" i mogu bezbedno da se porede)
+    # 3. Proveravamo preklapanje
     for existing in existing_games:
         existing_start = existing.date
         existing_end = existing_start + timedelta(minutes=existing.duration_minutes)
-
         if new_start < existing_end and new_end > existing_start:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Termin se preklapa sa '{existing.title}' na ovoj lokaciji!"
-            )
+            raise HTTPException(status_code=400, detail=f"Termin se preklapa sa '{existing.title}' na ovoj lokaciji!")
 
     # 4. Priprema podataka za čuvanje
     game_data = game.model_dump()
     game_data.pop("organizer_id", None) 
     
+    # ✅ DEBUG: Štampaj u Render logovima šta tačno primamo
+    print(f"🔥 PRIMLJENI PODACI ZA TERMIN: {game_data}")
+
     # 5. Kreiramo termin
     db_game = Game(**game_data, organizer_id=1)
     
     db.add(db_game)
     db.commit()
     db.refresh(db_game)
+    
+    print(f"✅ SAČUVANO U BAZU: team_a_name={db_game.team_a_name}, team_b_name={db_game.team_b_name}")
     return db_game
 
 @router.get("/", response_model=list[GameResponse])
