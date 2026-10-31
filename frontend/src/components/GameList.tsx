@@ -28,6 +28,10 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
     const [showJoinForm, setShowJoinForm] = useState(false);
     const [showFullModal, setShowFullModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    // ✅ 1. NOVO: State za čuvanje poruke o grešci
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
     const [formData, setFormData] = useState({
         guest_name: '',
         guest_phone: '',
@@ -45,14 +49,18 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
             setShowJoinForm(false);
             setSelectedGame(null);
             setFormData({ guest_name: '', guest_phone: '', position: '', team: 'A' });
+            setErrorMessage(null); // ✅ Resetuj grešku pri uspehu
             setShowSuccessModal(true);
         },
         onError: (error: any) => {
-            alert('Greška pri prijavi: ' + (error.response?.data?.detail || error.message));
+            // ✅ 2. NOVO: Umesto alert-a, čuvamo poruku u state
+            setErrorMessage(error.response?.data?.detail || 'Došlo je do neočekivane greške pri prijavi.');
         },
     });
 
     const handleJoin = (game: Game) => {
+        setErrorMessage(null); // ✅ 3. NOVO: Resetuj grešku svaki put kad se forma otvori
+
         const activePlayers = game.current_players_count;
 
         if (activePlayers >= game.max_players) {
@@ -69,6 +77,9 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
     const handleJoinSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedGame) return;
+
+        setErrorMessage(null); // ✅ Resetuj grešku pre svakog novog slanja
+
         joinMutation.mutate({
             game_id: selectedGame.id,
             guest_name: formData.guest_name,
@@ -85,6 +96,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                 setShowFullModal(false);
                 setShowSuccessModal(false);
                 setSelectedGame(null);
+                setErrorMessage(null);
             }
         };
         if (showJoinForm || showFullModal || showSuccessModal) window.addEventListener('keydown', handleEsc);
@@ -126,7 +138,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                 <p className="text-zinc-400 text-xs sm:text-sm font-mono mt-1 truncate">{selectedGame.title}</p>
                             </div>
                             <button
-                                onClick={() => { setShowJoinForm(false); setSelectedGame(null); }}
+                                onClick={() => { setShowJoinForm(false); setSelectedGame(null); setErrorMessage(null); }}
                                 className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
                             >
                                 ✕
@@ -134,6 +146,17 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                         </div>
 
                         <form onSubmit={handleJoinSubmit} className="space-y-4">
+
+                            {/* ✅ 4. NOVO: Lep prikaz greške umesto browser alert-a */}
+                            {errorMessage && (
+                                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm flex items-start mb-2">
+                                    <svg className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="font-medium">{errorMessage}</span>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Ime i prezime *</label>
                                 <input
@@ -196,7 +219,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                             <div className="flex gap-3 pt-2">
                                 <button
                                     type="button"
-                                    onClick={() => { setShowJoinForm(false); setSelectedGame(null); }}
+                                    onClick={() => { setShowJoinForm(false); setSelectedGame(null); setErrorMessage(null); }}
                                     className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-3 rounded-xl transition-colors text-sm border border-zinc-700"
                                 >
                                     Otkaži
