@@ -16,6 +16,8 @@ interface Game {
     status: string;
     current_players_count: number;
     current_cost_per_player: number;
+    team_a_name: string; // ✅ NOVO
+    team_b_name: string; // ✅ NOVO
 }
 
 interface GameCardProps {
@@ -62,8 +64,9 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
     };
 
     const activeParticipations = participations?.filter((p: any) => p.status !== 'declined') || [];
-    const teamA = activeParticipations.filter((p: any) => p.team === 'A');
-    const teamB = activeParticipations.filter((p: any) => p.team === 'B');
+    // ✅ NOVO: Filtriranje koristi dinamička imena, ali 'A' i 'B' ostaju kao fallback za stare podatke
+    const teamA = activeParticipations.filter((p: any) => p.team === 'A' || p.team === game.team_a_name);
+    const teamB = activeParticipations.filter((p: any) => p.team === 'B' || p.team === game.team_b_name);
     const playerCount = activeParticipations.length;
     const canCancel = isCancellationAllowed(game.date);
 
@@ -80,15 +83,9 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
     }, [showDetails, showCancelModal]);
 
     const getStatusBadge = () => {
-        if (game.status === 'cancelled') {
-            return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-950/50 text-red-400 text-[10px] sm:text-xs font-mono font-semibold border border-red-800/50">❌ OTKAZANO</span>;
-        }
-        if (game.status === 'confirmed' && !canCancel) {
-            return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/50 text-emerald-400 text-[10px] sm:text-xs font-mono font-semibold border border-emerald-800/50">🟢 IGRA SE</span>;
-        }
-        if (game.status === 'confirmed') {
-            return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-950/50 text-blue-400 text-[10px] sm:text-xs font-mono font-semibold border border-blue-800/50">✅ POTVRĐEN</span>;
-        }
+        if (game.status === 'cancelled') return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-950/50 text-red-400 text-[10px] sm:text-xs font-mono font-semibold border border-red-800/50">❌ OTKAZANO</span>;
+        if (game.status === 'confirmed' && !canCancel) return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/50 text-emerald-400 text-[10px] sm:text-xs font-mono font-semibold border border-emerald-800/50">🟢 IGRA SE</span>;
+        if (game.status === 'confirmed') return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-950/50 text-blue-400 text-[10px] sm:text-xs font-mono font-semibold border border-blue-800/50">✅ POTVRĐEN</span>;
         return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-950/50 text-amber-400 text-[10px] sm:text-xs font-mono font-semibold border border-amber-800/50">⏳ ORGANIZACIJA U TOKU</span>;
     };
 
@@ -98,10 +95,12 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
     };
 
     const handleConfirmCancel = () => {
-        if (selectedParticipationId) {
-            cancelMutation.mutate(selectedParticipationId);
-        }
+        if (selectedParticipationId) cancelMutation.mutate(selectedParticipationId);
     };
+
+    // Fallback za stare termine koji nemaju ova polja
+    const displayNameA = game.team_a_name || "Ekipa A";
+    const displayNameB = game.team_b_name || "Ekipa B";
 
     return (
         <>
@@ -139,19 +138,11 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                 </div>
 
                 <div className="p-4 sm:p-5 bg-zinc-950/30 border-t border-zinc-800/50 flex flex-col sm:flex-row gap-3">
-                    <button
-                        className="flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 text-zinc-300 hover:text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm"
-                        onClick={() => setShowDetails(true)}
-                    >
+                    <button className="flex-1 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-zinc-600 text-zinc-300 hover:text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm" onClick={() => setShowDetails(true)}>
                         Spisak prijavljenih i napomene
                     </button>
                     <button
-                        className={`flex-1 font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 ${game.status === 'cancelled'
-                            ? 'bg-red-900/30 text-red-400 cursor-not-allowed border border-red-800/50'
-                            : !canCancel
-                                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-                                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] border border-emerald-500'
-                            }`}
+                        className={`flex-1 font-medium py-2.5 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2 ${game.status === 'cancelled' ? 'bg-red-900/30 text-red-400 cursor-not-allowed border border-red-800/50' : !canCancel ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_0_20px_-3px_rgba(16,185,129,0.6)] border border-emerald-500'}`}
                         onClick={() => game.status !== 'cancelled' && canCancel && onJoinClick(game)}
                         disabled={game.status === 'cancelled' || !canCancel}
                     >
@@ -169,15 +160,9 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                                     <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">{game.title}</h2>
                                     <p className="text-zinc-400 text-xs sm:text-sm font-mono mt-1">{game.location} • {game.address}</p>
                                 </div>
-                                <button
-                                    onClick={() => setShowDetails(false)}
-                                    className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-                                >
-                                    ✕
-                                </button>
+                                <button onClick={() => setShowDetails(false)} className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">✕</button>
                             </div>
 
-                            {/* ✅ ISPRAVKA: Dodat 'PO IGRAČU' i grid prilagođen na sm:grid-cols-3 za bolji raspored */}
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6 p-4 bg-zinc-950/50 rounded-xl border border-zinc-800 text-xs sm:text-sm font-mono">
                                 <div><span className="text-zinc-500">DATUM:</span> <span className="text-zinc-200 ml-1">{formatDate(game.date)}</span></div>
                                 <div><span className="text-zinc-500">TRAJANJE:</span> <span className="text-zinc-200 ml-1">{game.duration_minutes} MIN</span></div>
@@ -196,18 +181,15 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                             <div className="mb-2">
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="font-bold text-white text-sm sm:text-base">Spisak igrača <span className="text-zinc-500 font-normal font-mono text-xs">({playerCount}/{game.max_players})</span></h3>
-                                    {!canCancel && (
-                                        <span className="text-[10px] font-mono font-bold text-red-400 bg-red-950/30 px-2 py-1 rounded border border-red-900/50">
-                                            🔒 ROK ZA IZMENE PROŠAO
-                                        </span>
-                                    )}
+                                    {!canCancel && <span className="text-[10px] font-mono font-bold text-red-400 bg-red-950/30 px-2 py-1 rounded border border-red-900/50">🔒 ROK ZA IZMENE PROŠAO</span>}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* ✅ NOVO: Dinamičko ime ekipe A */}
                                     <div className="bg-blue-950/20 border border-blue-900/30 rounded-xl p-4">
                                         <h4 className="font-bold text-blue-400 text-sm mb-3 flex items-center gap-2">
                                             <span className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">A</span>
-                                            Ekipa A ({teamA.length})
+                                            {displayNameA} ({teamA.length})
                                         </h4>
                                         {teamA.length === 0 ? (
                                             <p className="text-zinc-500 text-xs font-mono text-center py-4">Nema igrača</p>
@@ -223,12 +205,7 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                                                             {p.guest_phone && <p className="text-[10px] text-zinc-500 mt-0.5 font-mono truncate">{p.guest_phone}</p>}
                                                         </div>
                                                         {canCancel && (
-                                                            <button
-                                                                onClick={() => handleCancelClick(p.id)}
-                                                                className="flex-shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/30 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-900/50"
-                                                            >
-                                                                OTKAŽI
-                                                            </button>
+                                                            <button onClick={() => handleCancelClick(p.id)} className="flex-shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/30 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-900/50">OTKAŽI</button>
                                                         )}
                                                     </div>
                                                 ))}
@@ -236,10 +213,11 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                                         )}
                                     </div>
 
+                                    {/* ✅ NOVO: Dinamičko ime ekipe B */}
                                     <div className="bg-red-950/20 border border-red-900/30 rounded-xl p-4">
                                         <h4 className="font-bold text-red-400 text-sm mb-3 flex items-center gap-2">
                                             <span className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">B</span>
-                                            Ekipa B ({teamB.length})
+                                            {displayNameB} ({teamB.length})
                                         </h4>
                                         {teamB.length === 0 ? (
                                             <p className="text-zinc-500 text-xs font-mono text-center py-4">Nema igrača</p>
@@ -255,12 +233,7 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                                                             {p.guest_phone && <p className="text-[10px] text-zinc-500 mt-0.5 font-mono truncate">{p.guest_phone}</p>}
                                                         </div>
                                                         {canCancel && (
-                                                            <button
-                                                                onClick={() => handleCancelClick(p.id)}
-                                                                className="flex-shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/30 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-900/50"
-                                                            >
-                                                                OTKAŽI
-                                                            </button>
+                                                            <button onClick={() => handleCancelClick(p.id)} className="flex-shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/30 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-900/50">OTKAŽI</button>
                                                         )}
                                                     </div>
                                                 ))}
@@ -281,21 +254,10 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                         <div className="text-center">
                             <div className="text-5xl mb-4">⚠️</div>
                             <h3 className="text-xl font-bold text-white mb-4">Otkaži prijavu?</h3>
-                            <p className="text-zinc-300 text-sm leading-relaxed mb-6">
-                                Da li ste sigurni da želite da otkažete svoju prijavu? Ova akcija se ne može poništiti.
-                            </p>
+                            <p className="text-zinc-300 text-sm leading-relaxed mb-6">Da li ste sigurni da želite da otkažete svoju prijavu? Ova akcija se ne može poništiti.</p>
                             <div className="flex gap-3">
-                                <button
-                                    onClick={() => { setShowCancelModal(false); setSelectedParticipationId(null); }}
-                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-3 rounded-xl transition-colors text-sm border border-zinc-700"
-                                >
-                                    Ne, zadrži
-                                </button>
-                                <button
-                                    onClick={handleConfirmCancel}
-                                    disabled={cancelMutation.isPending}
-                                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-medium py-3 rounded-xl transition-colors text-sm shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)] disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
-                                >
+                                <button onClick={() => { setShowCancelModal(false); setSelectedParticipationId(null); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium py-3 rounded-xl transition-colors text-sm border border-zinc-700">Ne, zadrži</button>
+                                <button onClick={handleConfirmCancel} disabled={cancelMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-medium py-3 rounded-xl transition-colors text-sm shadow-[0_0_15px_-3px_rgba(239,68,68,0.4)] disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none">
                                     {cancelMutation.isPending ? 'Otkazivanje...' : 'Da, otkaži'}
                                 </button>
                             </div>
