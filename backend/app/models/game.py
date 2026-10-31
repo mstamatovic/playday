@@ -24,7 +24,10 @@ class Game(Base):
     total_cost = Column(Float, nullable=False, default=0)
     organizer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
-    # ✅ OVO JE KLJUČNA ISPRAVKA: values_callable govori bazi da koristi "draft", a ne "DRAFT"
+    # ✅ NOVO: Imena ekipa sa default vrednostima za postojeće termine
+    team_a_name = Column(String, nullable=False, default="Ekipa A")
+    team_b_name = Column(String, nullable=False, default="Ekipa B")
+    
     status = Column(
         Enum(GameStatus, values_callable=lambda x: [e.value for e in x], name="gamestatus"), 
         default=GameStatus.DRAFT
