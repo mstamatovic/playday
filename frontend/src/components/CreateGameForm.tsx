@@ -50,18 +50,18 @@ export default function CreateGameForm({ onSuccess, onCancel }: CreateGameFormPr
         <div className="max-w-3xl mx-auto bg-zinc-900/40 backdrop-blur-sm rounded-2xl border border-zinc-800 p-6 sm:p-8">
             <div className="mb-8 border-b border-zinc-800 pb-6">
                 <h2 className="text-2xl font-bold text-white tracking-tight">Zakaži novi termin</h2>
-                <p className="text-zinc-500 text-sm font-mono mt-2">// Popuni podatke ispod da kreiraš novi termin.</p>
+                <p className="text-zinc-500 text-sm font-mono mt-2">Unesi podatke ispod da kreiraš novi termin.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className={labelClass}>Naslov *</label>
-                        <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className={inputClass} placeholder="npr. Rekreativni Četvrtak" />
+                        <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className={inputClass} placeholder="npr. Odmor od žena i devojaka" />
                     </div>
                     <div>
                         <label className={labelClass}>Lokacija *</label>
-                        <input type="text" required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className={inputClass} placeholder="npr. Dvorana TRK" />
+                        <input type="text" required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className={inputClass} placeholder="npr. Dvorana Zlatibor" />
                     </div>
                 </div>
 
@@ -100,7 +100,7 @@ export default function CreateGameForm({ onSuccess, onCancel }: CreateGameFormPr
                 </div>
 
                 <div>
-                    <label className={labelClass}>Ukupna cena (RSD) *</label>
+                    <label className={labelClass}>Ukupna cena termina (RSD) *</label>
                     <input
                         type="number"
                         required
