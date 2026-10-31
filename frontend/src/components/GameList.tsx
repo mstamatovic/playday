@@ -3,6 +3,7 @@ import { getGames, createParticipation } from '../services/api';
 import { useState, useEffect } from 'react';
 import GameCard from './GameCard';
 
+// ✅ DODATO: team_a_name i team_b_name da se poklopi sa GameCard.tsx
 interface Game {
     id: number;
     title: string;
@@ -16,6 +17,8 @@ interface Game {
     status: string;
     current_players_count: number;
     current_cost_per_player: number;
+    team_a_name: string;
+    team_b_name: string;
 }
 
 interface GameListProps {
@@ -29,7 +32,6 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
     const [showFullModal, setShowFullModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // ✅ 1. NOVO: State za čuvanje poruke o grešci
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
@@ -49,18 +51,16 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
             setShowJoinForm(false);
             setSelectedGame(null);
             setFormData({ guest_name: '', guest_phone: '', position: '', team: 'A' });
-            setErrorMessage(null); // ✅ Resetuj grešku pri uspehu
+            setErrorMessage(null);
             setShowSuccessModal(true);
         },
         onError: (error: any) => {
-            // ✅ 2. NOVO: Umesto alert-a, čuvamo poruku u state
             setErrorMessage(error.response?.data?.detail || 'Došlo je do neočekivane greške pri prijavi.');
         },
     });
 
     const handleJoin = (game: Game) => {
-        setErrorMessage(null); // ✅ 3. NOVO: Resetuj grešku svaki put kad se forma otvori
-
+        setErrorMessage(null);
         const activePlayers = game.current_players_count;
 
         if (activePlayers >= game.max_players) {
@@ -78,7 +78,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
         e.preventDefault();
         if (!selectedGame) return;
 
-        setErrorMessage(null); // ✅ Resetuj grešku pre svakog novog slanja
+        setErrorMessage(null);
 
         joinMutation.mutate({
             game_id: selectedGame.id,
@@ -146,8 +146,6 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                         </div>
 
                         <form onSubmit={handleJoinSubmit} className="space-y-4">
-
-                            {/* ✅ 4. NOVO: Lep prikaz greške umesto browser alert-a */}
                             {errorMessage && (
                                 <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm flex items-start mb-2">
                                     <svg className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -201,7 +199,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                             : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                                             }`}
                                     >
-                                        Ekipa A
+                                        {selectedGame.team_a_name || 'Ekipa A'}
                                     </button>
                                     <button
                                         type="button"
@@ -211,7 +209,7 @@ export default function GameList({ onNavigateToCreate }: GameListProps) {
                                             : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                                             }`}
                                     >
-                                        Ekipa B
+                                        {selectedGame.team_b_name || 'Ekipa B'}
                                     </button>
                                 </div>
                             </div>
