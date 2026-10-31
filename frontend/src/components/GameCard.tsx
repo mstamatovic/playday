@@ -177,11 +177,13 @@ export default function GameCard({ game, onJoinClick }: GameCardProps) {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-5 sm:mb-6 p-4 bg-zinc-950/50 rounded-xl border border-zinc-800 text-xs sm:text-sm font-mono">
+                            {/* ✅ ISPRAVKA: Dodat 'PO IGRAČU' i grid prilagođen na sm:grid-cols-3 za bolji raspored */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6 p-4 bg-zinc-950/50 rounded-xl border border-zinc-800 text-xs sm:text-sm font-mono">
                                 <div><span className="text-zinc-500">DATUM:</span> <span className="text-zinc-200 ml-1">{formatDate(game.date)}</span></div>
                                 <div><span className="text-zinc-500">TRAJANJE:</span> <span className="text-zinc-200 ml-1">{game.duration_minutes} MIN</span></div>
                                 <div><span className="text-zinc-500">MAX:</span> <span className="text-zinc-200 ml-1">{game.max_players} IGRAČA</span></div>
                                 <div><span className="text-zinc-500">UKUPNO:</span> <span className="text-emerald-400 ml-1">{game.total_cost} RSD</span></div>
+                                <div><span className="text-zinc-500">PO IGRAČU:</span> <span className="text-emerald-400 ml-1">{playerCount > 0 ? Math.round(game.current_cost_per_player) : '---'} RSD</span></div>
                             </div>
 
                             {game.description && (
